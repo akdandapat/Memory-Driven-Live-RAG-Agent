@@ -1,0 +1,56 @@
+services:
+  app:
+    build: .
+    image: agentic-rag-live-data:1.0.0
+    container_name: agentic-rag
+    ports:
+      - "8000:8000"
+    environment:
+      # DEMO by default. For LIVE Jira, set APP_MODE=live and supply the three JIRA_* values
+      # (via .env, never baked into the image).
+      APP_MODE: ${APP_MODE:-demo}
+      DB_PATH: /app/data/app.db
+      MOCK_DATA_DIR: /app/data/mock_jira
+      MCP_TRANSPORT: ${MCP_TRANSPORT:-inproc}
+      LLM_PROVIDER: ${LLM_PROVIDER:-none}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-hashing}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      JIRA_ALLOWED_PROJECTS: ${JIRA_ALLOWED_PROJECTS:-}
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-agentic-rag-live-data}
+    volumes:
+      # Persist the local index, traces and memory across restarts.
+      - agentic-data:/app/data
+    restart: unless-stopped
+
+  # Optional: run the MCP server as its own process over Streamable HTTP, so the tool layer is
+  # a separately deployable service (set MCP_TRANSPORT=http and MCP_SERVER_URL accordingly).
+  mcp:
+    build: .
+    image: agentic-rag-live-data:1.0.0
+    container_name: agentic-rag-mcp
+    command: ["python", "-m", "app.mcp_server.server", "--http", "--host", "0.0.0.0", "--port", "8765"]
+    ports:
+      - "8765:8765"
+    environment:
+      APP_MODE: ${APP_MODE:-demo}
+      DB_PATH: /app/data/app.db
+      MOCK_DATA_DIR: /app/data/mock_jira
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      JIRA_ALLOWED_PROJECTS: ${JIRA_ALLOWED_PROJECTS:-}
+    volumes:
+      - agentic-data:/app/data
+    profiles: ["mcp-http"]
+    restart: unless-stopped
+
+volumes:
+  agentic-data:
