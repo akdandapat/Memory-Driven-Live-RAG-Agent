@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agentic RAG over Live Data and Memory</title>
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <h1>Agentic RAG over Live Data &amp; Memory</h1>
+      <p id="status-line">connecting…</p>
+    </div>
+  </div>
+  <div class="actions">
+    <label class="toggle"><input type="checkbox" id="compare-toggle" /> compare with basic RAG</label>
+    <button id="sync-btn" title="Pull changed records from the live source into the index">Sync source</button>
+    <button id="memory-btn">Memory</button>
+    <button id="tools-btn">Tools</button>
+  </div>
+</header>
+
+<main>
+  <section class="chat-pane">
+    <div id="messages" class="messages"></div>
+    <div class="examples" id="examples"></div>
+    <form id="chat-form" class="composer">
+      <textarea id="input" rows="2" placeholder="Ask about a project… e.g. Summarize what changed in Project Atlas during Q2 2026 and identify the major risks."></textarea>
+      <button type="submit" id="send-btn">Ask</button>
+    </form>
+  </section>
+
+  <aside class="trace-pane">
+    <h2>Agent trace</h2>
+    <p class="hint">Operational trace: memory, plan, tool calls, evidence, synthesis, memory update. Private reasoning is not shown.</p>
+    <div id="trace"></div>
+  </aside>
+</main>
+
+<div id="drawer" class="drawer hidden">
+  <div class="drawer-head"><h3 id="drawer-title">Panel</h3><button id="drawer-close">×</button></div>
+  <div id="drawer-body"></div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
